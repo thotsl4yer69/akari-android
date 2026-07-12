@@ -1,0 +1,18 @@
+# Keep line endings sane across platforms and CI (Linux runner).
+* text=auto eol=lf
+
+# The Unix wrapper script MUST stay LF (CRLF breaks the shebang on CI).
+gradlew text eol=lf
+*.sh text eol=lf
+
+# Windows scripts keep CRLF.
+*.bat text eol=crlf
+
+# Binary assets — never touch line endings.
+*.jar binary
+*.ttf binary
+*.otf binary
+*.png binary
+*.webp binary
+*.keystore binary
+*.jks binary
