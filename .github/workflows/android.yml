@@ -35,12 +35,30 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug testDebugUnitTest --no-daemon
 
-      - name: Upload APK artifact
+      - name: Build signed release APK
+        if: steps.gradle_check.outputs.exists == 'true'
+        env:
+          AKARI_KEYSTORE_B64: ${{ secrets.AKARI_KEYSTORE_BASE64 }}
+          AKARI_KEYSTORE_PASSWORD: ${{ secrets.AKARI_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$AKARI_KEYSTORE_B64" ]; then echo "No signing secret — skipping release build."; exit 0; fi
+          echo "$AKARI_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/akari.jks"
+          AKARI_KEYSTORE="$RUNNER_TEMP/akari.jks" ./gradlew assembleRelease --no-daemon
+
+      - name: Upload debug APK artifact
         if: steps.gradle_check.outputs.exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: akari-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: warn
+
+      - name: Upload release APK artifact
+        if: steps.gradle_check.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: akari-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: warn
 
   # Boots the app on an emulator, walks every screen (SmokeTest), and uploads
@@ -108,21 +126,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download APK artifact
+      - name: Download debug APK artifact
         uses: actions/download-artifact@v4
         with:
           name: akari-debug-apk
+          path: debug
+
+      - name: Download release APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: akari-release-apk
+          path: release
 
       - name: Publish rolling release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG=latest
-          NOTES="Debug APK built from \`${GITHUB_SHA}\`.
+          mv release/app-release.apk akari.apk
+          mv debug/app-debug.apk akari-demo.apk
+          NOTES="Built from \`${GITHUB_SHA}\`.
 
-          **Install:** download \`app-debug.apk\` on an Android phone (Android 9+), tap it, allow installing from this source.
+          ## Install \`akari.apk\` — this is the app
+          Starts empty, exactly as designed: onboarding, then your first morning check-in. Download it on an Android phone (Android 9+), tap it, allow installing from this source.
 
-          Debug builds seed demo data for review; a release build would start empty."
-          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --prerelease --title "Akari debug (latest main)" --notes "$NOTES"
-          gh release upload "$TAG" app-debug.apk --clobber
-          gh release edit "$TAG" --notes "$NOTES"
+          \`akari-demo.apk\` is the design-review build (separate app, \"Akari (demo)\") pre-seeded with example days — for looking at screens, not for real use. They can be installed side by side."
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --prerelease --title "Akari (latest main)" --notes "$NOTES"
+          gh release upload "$TAG" akari.apk akari-demo.apk --clobber
+          gh release delete-asset "$TAG" app-debug.apk --yes || true
+          gh release edit "$TAG" --title "Akari (latest main)" --notes "$NOTES"
