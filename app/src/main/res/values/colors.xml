@@ -1,4 +1,5 @@
 <resources>
     <color name="washi">#FFF1E7D4</color>
-    <color name="ic_launcher_background">#FFF1E7D4</color>
+    <!-- Dusk-warm ground so the lit lantern reads (paper-on-paper vanished). -->
+    <color name="ic_launcher_background">#FF241B14</color>
 </resources>

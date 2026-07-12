@@ -1,34 +1,61 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Soft amber halo -->
+
+    <!-- Amber halo — the glow against dusk -->
+    <path android:pathData="M22,54 a32,32 0 1 0 64,0 a32,32 0 1 0 -64,0 z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="54"
+                android:centerY="54"
+                android:gradientRadius="32">
+                <item android:offset="0" android:color="#8CEBA950" />
+                <item android:offset="1" android:color="#00EBA950" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Cord -->
     <path
-        android:fillColor="#33EBA950"
-        android:pathData="M54,54m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0" />
-    <!-- Lantern body (oval chōchin) -->
-    <path
-        android:fillColor="#F0DCAE"
-        android:pathData="M54,32 C64,32 71,40 71,54 C71,68 64,76 54,76 C44,76 37,68 37,54 C37,40 44,32 54,32 Z" />
-    <!-- Inner glow -->
-    <path
-        android:fillColor="#EBA950"
-        android:fillAlpha="0.55"
-        android:pathData="M54,44 m-11,0 a11,15 0,1 1,22 0 a11,15 0,1 1,-22 0" />
-    <!-- Top cap -->
+        android:fillColor="#4A3B2A"
+        android:pathData="M53.25,29 h1.5 v4 h-1.5 z" />
+
+    <!-- Top wood cap -->
     <path
         android:fillColor="#2C2820"
-        android:pathData="M46,30 h16 v4 h-16 z" />
-    <!-- Bottom cap -->
+        android:pathData="M47,33 h14 v4 h-14 z" />
+
+    <!-- Paper body (chōchin), lit from within -->
+    <path android:pathData="M54,37 C63,37 69,44.5 69,55 C69,65.5 63,73 54,73 C45,73 39,65.5 39,55 C39,44.5 45,37 54,37 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="54"
+                android:centerY="50"
+                android:gradientRadius="24">
+                <item android:offset="0" android:color="#FFFFF3D9" />
+                <item android:offset="0.55" android:color="#FFF3CE8E" />
+                <item android:offset="1" android:color="#FFE2AC5C" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Bamboo ribs -->
+    <path
+        android:fillColor="#38462D0F"
+        android:pathData="M41,46 h26 v0.9 h-26 z M39.5,55 h29 v0.9 h-29 z M41,64 h26 v0.9 h-26 z" />
+
+    <!-- Bottom wood cap -->
     <path
         android:fillColor="#2C2820"
-        android:pathData="M48,76 h12 v4 h-12 z" />
-    <!-- Tassel -->
+        android:pathData="M48.5,73 h11 v3.6 h-11 z" />
+
+    <!-- Ember tassel + bead -->
     <path
         android:fillColor="#D9793F"
-        android:pathData="M53,80 h2 v6 h-2 z" />
-    <path
-        android:fillColor="#D9793F"
-        android:pathData="M54,88 m-3,0 a3,3 0,1 1,6 0 a3,3 0,1 1,-6 0" />
+        android:pathData="M53.1,76.6 h1.8 v5 h-1.8 z M51.6,83.4 a2.4,2.4 0 1 0 4.8,0 a2.4,2.4 0 1 0 -4.8,0 z" />
 </vector>
