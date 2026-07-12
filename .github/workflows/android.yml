@@ -1,0 +1,42 @@
+# Android build — skips gracefully until the Gradle project exists
+name: android
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for Gradle project
+        id: gradle_check
+        run: |
+          if [ -f gradlew ]; then echo "exists=true" >> "$GITHUB_OUTPUT"; else echo "exists=false" >> "$GITHUB_OUTPUT"; echo "No gradlew yet — skipping build (design-only repo state)."; fi
+
+      - name: Set up JDK 17
+        if: steps.gradle_check.outputs.exists == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        if: steps.gradle_check.outputs.exists == 'true'
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK + unit tests
+        if: steps.gradle_check.outputs.exists == 'true'
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug testDebugUnitTest --no-daemon
+
+      - name: Upload APK artifact
+        if: steps.gradle_check.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: akari-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: warn
