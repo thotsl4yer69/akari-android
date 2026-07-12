@@ -78,7 +78,7 @@ jobs:
           # so the screenshot pull must stay a one-liner.
           script: |
             chmod +x gradlew
-            ./gradlew connectedDebugAndroidTest --no-daemon
+            ./gradlew connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterTest=true --no-daemon
             mkdir -p screenshots && for f in $(adb shell run-as com.akari.app ls files/screenshots | tr -d '\r'); do adb exec-out run-as com.akari.app cat "files/screenshots/$f" > "screenshots/$f"; done && ls -la screenshots
 
       - name: Upload screenshots
