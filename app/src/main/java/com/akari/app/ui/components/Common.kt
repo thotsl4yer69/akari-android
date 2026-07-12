@@ -75,7 +75,7 @@ fun Modifier.clickableRole(role: Role = Role.Button, onClick: () -> Unit): Modif
 
 /** On-brand pill toggle — sage track when on, sumi/washi knob; instant, no bounce. */
 @Composable
-fun AkariSwitch(checked: Boolean, onToggle: () -> Unit, motion: Boolean = true, modifier: Modifier = Modifier) {
+fun AkariSwitch(checked: Boolean, onToggle: () -> Unit, motion: Boolean = LocalMotionEnabled.current, modifier: Modifier = Modifier) {
     val knobX by animateFloatAsState(if (checked) 23f else 3f, tween(if (motion) 180 else 0), label = "knob")
     Box(
         modifier
@@ -151,7 +151,7 @@ fun AkariTextField(
  * instant scale when motion is disabled.
  */
 @Composable
-fun Modifier.pressScale(pressedScale: Float, motion: Boolean = true): Modifier {
+fun Modifier.pressScale(pressedScale: Float, motion: Boolean = LocalMotionEnabled.current): Modifier {
     var pressed by remember { androidx.compose.runtime.mutableStateOf(false) }
     val scaleV by animateFloatAsState(
         targetValue = if (pressed) pressedScale else 1f,

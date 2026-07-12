@@ -84,7 +84,7 @@ fun Lantern(
     startEnergy: Float,
     modifier: Modifier = Modifier,
     size: LanternSize = LanternSize.Hero,
-    motion: Boolean = true,
+    motion: Boolean = LocalMotionEnabled.current,
 ) {
     val d = dimsFor(size)
     val hue = LocalLanternHue.current

@@ -114,7 +114,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             entries = data.entries,
             pem = data.pemDay || pemEntry != null,
             pemTime = pemEntry?.timeLabel,
-            hr = if (prefs.hcConnected) tr.hr else null,
+            // Respect the per-data "Heart rate" toggle: no HR unless connected AND allowed.
+            hr = if (prefs.hcConnected && prefs.hcHr) tr.hr else null,
             hcConnected = prefs.hcConnected,
             hcPerms = mapOf(
                 "hr" to prefs.hcHr, "resting" to prefs.hcResting,
@@ -289,7 +290,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Poll the latest HR from Health Connect (called ~every 15s while Home is resumed). */
     fun refreshHeartRate() {
-        if (!uiState.value.hcConnected) return
+        // Don't read HR unless connected AND the "Heart rate" toggle is on.
+        if (!uiState.value.hcConnected || uiState.value.hcPerms["hr"] != true) return
         viewModelScope.launch {
             val bpm = health.latestHeartRate()
             if (bpm != null) t.update { it.copy(hr = bpm) }
