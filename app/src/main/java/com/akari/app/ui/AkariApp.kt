@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.CompositionLocalProvider
+import com.akari.app.ui.components.LocalMotionEnabled
 import com.akari.app.ui.components.PathGlyph
 import com.akari.app.ui.components.clickableRole
 import com.akari.app.ui.components.pressScale
@@ -53,6 +55,7 @@ fun AkariApp(vm: AppViewModel, state: UiState) {
     val showTabs = state.sheet == Sheet.None &&
         state.screen in setOf(Screen.Home, Screen.Trends, Screen.History, Screen.Settings)
 
+    CompositionLocalProvider(LocalMotionEnabled provides motion) {
     Box(Modifier.fillMaxSize().background(AkariColors.Washi)) {
         Column(Modifier.fillMaxSize()) {
             // status-bar inset spacer
@@ -100,6 +103,7 @@ fun AkariApp(vm: AppViewModel, state: UiState) {
                 Text(state.toast ?: "", style = AkariText.Label, color = AkariColors.Washi)
             }
         }
+    }
     }
 }
 
