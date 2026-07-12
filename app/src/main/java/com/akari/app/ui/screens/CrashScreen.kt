@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
@@ -50,6 +51,7 @@ fun CrashScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
                     center = Offset(0.5f, 0.3f) * 2000f, radius = 2000f,
                 ),
             )
+            .navigationBarsPadding()
             .padding(horizontal = 26.dp).padding(top = 40.dp, bottom = 30.dp),
     ) {
         Column(Modifier.fillMaxWidth().padding(top = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -81,7 +83,7 @@ fun CrashScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
                         label = if (state.crashMeds) "Meds ✓" else "Took meds",
                         done = state.crashMeds, doneBg = Color(0x3345688A), doneBd = Color(0x8045688A),
                         motion = motion, modifier = Modifier.weight(1f),
-                        icon = { PathGlyph("M3 8h18v8H3zM12 8v8", 30.dp, CrashColors.Text, strokeWidth = 1.5.dp) },
+                        icon = { PathGlyph("M7 8h10a4 4 0 0 1 0 8H7a4 4 0 0 1 0-8zM12 8v8", 30.dp, CrashColors.Text, strokeWidth = 1.5.dp) },
                     ) { vm.crashMeds() }
                     CrashTile(
                         label = "Back to light",

@@ -27,6 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -87,9 +89,9 @@ fun AkariApp(vm: AppViewModel, state: UiState) {
             CrashScreen(vm, state, motion)
         }
 
-        // Toast
+        // Toast — never over crash mode (crash is silent by design)
         AnimatedVisibility(
-            visible = state.toast != null,
+            visible = state.toast != null && state.screen != Screen.Crash,
             enter = fadeIn() + slideInVertically { it / 4 },
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 104.dp),
@@ -134,7 +136,8 @@ private fun TabBar(screen: Screen, motion: Boolean, vm: AppViewModel) {
                         .pressScale(0.9f, motion)
                         .clip(CircleShape)
                         .background(AkariColors.Sumi)
-                        .clickableRole(onClick = { vm.openLog() }),
+                        .clickableRole(onClick = { vm.openLog() })
+                        .semantics { contentDescription = "Log something" },
                     contentAlignment = Alignment.Center,
                 ) {
                     PathGlyph("M12 5v14M5 12h14", 24.dp, AkariColors.Washi, strokeWidth = 2.dp)

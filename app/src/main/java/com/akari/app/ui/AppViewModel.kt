@@ -358,25 +358,32 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val today = t.value.today
         if (repo.dayOnce(today) != null) return
 
-        // 8 past days (History + Trends), each one synthetic activity carrying the split.
+        // 8 past days for History/Trends, built from real presets so the 48h
+        // trigger look-back surfaces meaningful names ("Errand out" ranks 4×,
+        // like the prototype's triggerData).
+        val byName = DesignData.presets.associateBy { it.name }
         val seed = listOf(
-            SeedDay(SleepQuality.POOR, 70, true, 24, 14, 10),
-            SeedDay(SleepQuality.OKAY, 85, false, 22, 20, 13),
-            SeedDay(SleepQuality.RESTED, 80, false, 18, 10, 8),
-            SeedDay(SleepQuality.POOR, 55, false, 8, 9, 4),
-            SeedDay(SleepQuality.BROKEN, 40, true, 9, 8, 11),
-            SeedDay(SleepQuality.OKAY, 75, false, 30, 15, 10),
-            SeedDay(SleepQuality.RESTED, 82, false, 17, 15, 10),
-            SeedDay(SleepQuality.POOR, 60, false, 8, 10, 4),
+            SeedDay(SleepQuality.POOR, 70, true, listOf("Errand out", "See a friend", "Screen time", "Housework")),
+            SeedDay(SleepQuality.OKAY, 85, false, listOf("Errand out", "Drive", "Cook a meal", "Shower")),
+            SeedDay(SleepQuality.RESTED, 80, false, listOf("See a friend", "Screen time", "Short walk")),
+            SeedDay(SleepQuality.POOR, 55, false, listOf("Phone call", "Cook a meal")),
+            SeedDay(SleepQuality.BROKEN, 40, true, listOf("Errand out", "See a friend", "Screen time", "Appointment")),
+            SeedDay(SleepQuality.OKAY, 75, false, listOf("Errand out", "Drive", "Housework", "Cook a meal")),
+            SeedDay(SleepQuality.RESTED, 82, false, listOf("Shower", "Short walk", "Screen time")),
+            SeedDay(SleepQuality.POOR, 60, false, listOf("Phone call", "Drive")),
         )
         seed.forEachIndexed { i, sd ->
             val day = today - (i + 1)
             repo.startDay(day, sd.start, sd.sleep, com.akari.app.domain.PacingEngine.zoneOf(sd.start))
             if (sd.pem) repo.setPem(day, true)
-            val at = (day) * 86_400_000L + 9 * 3_600_000L
-            repo.addEntry(marker(EntryKind.WAKE, "Woke", "slept ${sd.sleep.wokeWord}", at), day)
-            repo.addEntry(activity("Day's activity", sd.p, sd.c, sd.e, sd.p + sd.c + sd.e, at + 3_600_000L), day)
-            if (sd.pem) repo.addEntry(marker(EntryKind.PEM, "PEM flagged", "the most useful data point", at + 7_200_000L), day)
+            val base = day * 86_400_000L + 9 * 3_600_000L
+            repo.addEntry(marker(EntryKind.WAKE, "Woke", "slept ${sd.sleep.wokeWord}", base), day)
+            sd.activities.forEachIndexed { j, name ->
+                val a = byName.getValue(name)
+                repo.addEntry(activity(a.name, a.p, a.c, a.e, a.total, base + (j + 1) * 5_400_000L), day)
+            }
+            // PEM in the evening so the day's own activities fall inside its 48h window.
+            if (sd.pem) repo.addEntry(marker(EntryKind.PEM, "PEM flagged", "the most useful data point", base + 10 * 3_600_000L), day)
         }
 
         // Today, seeded.
@@ -392,6 +399,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private data class SeedDay(
-        val sleep: SleepQuality, val start: Int, val pem: Boolean, val p: Int, val c: Int, val e: Int,
+        val sleep: SleepQuality, val start: Int, val pem: Boolean, val activities: List<String>,
     )
 }
