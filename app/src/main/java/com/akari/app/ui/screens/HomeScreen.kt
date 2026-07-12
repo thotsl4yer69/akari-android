@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -74,7 +76,8 @@ fun HomeScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
             Box(
                 Modifier.size(40.dp).clip(CircleShape).background(AkariColors.Card)
                     .border(1.dp, AkariColors.Line2, CircleShape)
-                    .clickableRole(onClick = { vm.enterCrash() }),
+                    .clickableRole(onClick = { vm.enterCrash() })
+                    .semantics { contentDescription = "Enter crash mode" },
                 contentAlignment = Alignment.Center,
             ) {
                 PathGlyph("M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8Z", 18.dp, AkariColors.Sumi2, filled = true)
