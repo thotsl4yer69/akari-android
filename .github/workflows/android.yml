@@ -74,19 +74,19 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          # NB: the runner executes each script line as its own `sh -c`,
-          # so the screenshot pull must stay a one-liner.
+          # additionalTestOutput: AGP itself pulls the screenshots off the
+          # device after the run (the app is uninstalled post-test, so a
+          # manual adb pull would find nothing).
           script: |
             chmod +x gradlew
-            ./gradlew connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterTest=true --no-daemon
-            mkdir -p screenshots && for f in $(adb shell run-as com.akari.app ls files/screenshots | tr -d '\r'); do adb exec-out run-as com.akari.app cat "files/screenshots/$f" > "screenshots/$f"; done && ls -la screenshots
+            ./gradlew connectedDebugAndroidTest -Pandroid.enableAdditionalTestOutput=true --no-daemon
 
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: akari-screenshots
-          path: screenshots/
+          path: app/build/outputs/connected_android_test_additional_output/
           if-no-files-found: warn
 
       - name: Upload instrumented-test report
@@ -96,3 +96,33 @@ jobs:
           name: androidTest-report
           path: app/build/reports/androidTests/
           if-no-files-found: warn
+
+  # Publishes the debug APK from every green main build to a rolling GitHub
+  # Release, so there's always a directly-downloadable APK under /releases.
+  release:
+    runs-on: ubuntu-latest
+    needs: [build, smoke]
+    if: needs.build.outputs.exists == 'true' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: akari-debug-apk
+
+      - name: Publish rolling release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=latest
+          NOTES="Debug APK built from \`${GITHUB_SHA}\`.
+
+          **Install:** download \`app-debug.apk\` on an Android phone (Android 9+), tap it, allow installing from this source.
+
+          Debug builds seed demo data for review; a release build would start empty."
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --prerelease --title "Akari debug (latest main)" --notes "$NOTES"
+          gh release upload "$TAG" app-debug.apk --clobber
+          gh release edit "$TAG" --notes "$NOTES"

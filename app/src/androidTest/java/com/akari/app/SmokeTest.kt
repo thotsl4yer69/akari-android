@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,7 +40,11 @@ class SmokeTest {
 
     private fun shot(name: String) {
         val bmp = rule.onRoot().captureToImage().asAndroidBitmap()
-        val dir = File(rule.activity.filesDir, "screenshots").apply { mkdirs() }
+        // With -Pandroid.enableAdditionalTestOutput=true AGP injects this dir
+        // and pulls it to build/outputs/connected_android_test_additional_output
+        // after the run (survives the post-test uninstall). Fallback: filesDir.
+        val out = InstrumentationRegistry.getArguments().getString("additionalTestOutputDir")
+        val dir = (out?.let { File(it) } ?: File(rule.activity.filesDir, "screenshots")).apply { mkdirs() }
         FileOutputStream(File(dir, "$name.png")).use {
             bmp.compress(Bitmap.CompressFormat.PNG, 100, it)
         }
