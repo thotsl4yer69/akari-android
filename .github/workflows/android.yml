@@ -78,8 +78,10 @@ jobs:
             chmod +x gradlew
             ./gradlew connectedDebugAndroidTest --no-daemon
             mkdir -p screenshots
-            adb exec-out run-as com.akari.app sh -c "cd files/screenshots && tar cf - ." > screenshots/shots.tar
-            tar xf screenshots/shots.tar -C screenshots && rm screenshots/shots.tar
+            for f in $(adb shell run-as com.akari.app ls files/screenshots | tr -d '\r'); do
+              adb exec-out run-as com.akari.app cat "files/screenshots/$f" > "screenshots/$f"
+            done
+            ls -la screenshots
 
       - name: Upload screenshots
         if: always()
