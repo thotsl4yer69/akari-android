@@ -20,14 +20,32 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    // Release signing key comes from the environment (CI decodes it from a
+    // GitHub secret; locally point AKARI_KEYSTORE at the .jks). Unset → the
+    // release build stays unsigned and only debug is installable.
+    val keystorePath: String? = System.getenv("AKARI_KEYSTORE")
+    if (keystorePath != null) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("AKARI_KEYSTORE_PASSWORD")
+                keyAlias = "akari"
+                keyPassword = System.getenv("AKARI_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         debug {
-            // Seed demo data only in debug so designers can review real screens.
+            // The demo build: seeded data for design review, own appId so it
+            // can live next to the real app.
+            applicationIdSuffix = ".debug"
             buildConfigField("boolean", "SEED_DEMO", "true")
         }
         release {
             isMinifyEnabled = false
             buildConfigField("boolean", "SEED_DEMO", "false")
+            if (keystorePath != null) signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

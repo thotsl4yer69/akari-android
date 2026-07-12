@@ -1,0 +1,4 @@
+<resources>
+    <!-- Debug/demo build is a separate app (com.akari.app.debug) — label it. -->
+    <string name="app_name">Akari (demo)</string>
+</resources>
