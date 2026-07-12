@@ -89,9 +89,9 @@ fun AkariApp(vm: AppViewModel, state: UiState) {
             CrashScreen(vm, state, motion)
         }
 
-        // Toast
+        // Toast — never over crash mode (crash is silent by design)
         AnimatedVisibility(
-            visible = state.toast != null,
+            visible = state.toast != null && state.screen != Screen.Crash,
             enter = fadeIn() + slideInVertically { it / 4 },
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 104.dp),
