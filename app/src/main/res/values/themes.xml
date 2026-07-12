@@ -1,0 +1,12 @@
+<resources>
+    <!-- Base theme. Colors are supplied by the Compose AkariTheme; this only
+         provides a warm-paper window background and a status/nav bar starting
+         point so there is never a flash of black or default-purple. -->
+    <style name="Theme.Akari" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/washi</item>
+        <item name="android:statusBarColor">@color/washi</item>
+        <item name="android:navigationBarColor">@color/washi</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>
