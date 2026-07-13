@@ -151,7 +151,7 @@ fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
                 Divider()
                 DataRow("M4 12a8 8 0 1 0 2.3-5.6M4 4v3h3", "Restore from a backup") { vm.restore() }
                 Divider()
-                DataRow("M4 6h16v13H4zM4 6l3-3h10l3 3M12 10v6M9 13h6", "Clear everything") {
+                DataRow("M4 6h16v13H4zM4 6l3-3h10l3 3M12 10v6M9 13h6", "Clear all data") {
                     showClearConfirmation = true
                 }
             }
@@ -170,7 +170,7 @@ fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
             containerColor = AkariColors.Card,
             titleContentColor = AkariColors.Sumi,
             textContentColor = AkariColors.Sumi2,
-            title = { Text("Clear everything?", style = AkariText.OnboardH2) },
+            title = { Text("Clear all data?", style = AkariText.OnboardH2) },
             text = {
                 Text(
                     "This erases your diary, profile, and settings from this phone. You will return to the welcome screen.",
@@ -193,7 +193,7 @@ fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
                         contentColor = AkariColors.Washi,
                     ),
                 ) {
-                    Text("Clear everything")
+                    Text("Clear all data")
                 }
             },
         )
