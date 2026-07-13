@@ -77,7 +77,7 @@ class SmokeTest {
         waitForText("SPENT TODAY")
 
         // ---- log an activity; the lantern must dim ----
-        // A new day starts at 60; "Cook a meal" costs 8 → 52.
+        // 60 (fresh day start) − 8 (Cook a meal cost) = 52.
         rule.onNodeWithContentDescription("Log something").performClick()
         waitForText("Activity")
         rule.onNodeWithText("Activity").performClick()
