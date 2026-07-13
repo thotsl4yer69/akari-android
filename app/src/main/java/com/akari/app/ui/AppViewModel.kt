@@ -273,6 +273,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // ------------------------------------------------------------- settings ---
     fun setHue(color: Color) = viewModelScope.launch { prefsRepo.setHue(color.toArgb()) }
     fun togglePoetic() = viewModelScope.launch { prefsRepo.setPoetic(!uiState.value.poetic) }
+    fun clearAllData() {
+        viewModelScope.launch {
+            repo.wipeAll()
+            prefsRepo.clear()
+            t.update {
+                Transient(
+                    screen = Screen.Onboarding,
+                    today = it.today,
+                    toast = "Your diary was cleared",
+                )
+            }
+        }
+    }
     fun exportCsv() = flashToast("Exported diary.csv · share with your doctor")
     fun backup() = flashToast("Backed up akari-backup.json to this phone")
     fun restore() = flashToast("Choose a backup file to restore")

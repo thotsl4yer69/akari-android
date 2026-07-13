@@ -15,6 +15,6 @@ A native Android energy diary for ME/CFS — pacing, PEM tracking, and a paper l
 ```
 Debug APK lands at `app/build/outputs/apk/debug/app-debug.apk` → `adb install` or sideload. Every push also produces the `akari-debug-apk` artifact on the Actions run. Test Health Connect on a real device with the Health Connect app installed.
 
-Debug builds seed demo data for design review; release builds start empty, showing the three designed first-run states.
+Fresh installs start empty in every build type, showing the three designed first-run states.
 
 Before sharing any build, walk `design/QA_CHECKLIST.md` on-device at 200% font scale — for this audience, accessibility is the product.

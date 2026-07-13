@@ -54,7 +54,7 @@ class DiaryRepository(private val dao: AkariDao) {
     fun allEntries(): Flow<List<DiaryEntry>> = dao.allEntries().map { rows -> rows.map { it.toDomain() } }
 
     // ---- data management ----
-    suspend fun wipeAll() { dao.clearEntries(); dao.clearDays() }
+    suspend fun wipeAll() = dao.clearAll()
 }
 
 private fun EntryEntity.toDomain() = DiaryEntry(
