@@ -1,6 +1,7 @@
 package com.akari.app.ui
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.AndroidViewModel
@@ -287,7 +288,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 }
             } catch (error: CancellationException) {
                 throw error
-            } catch (_: Exception) {
+            } catch (error: Exception) {
+                Log.e(TAG, "Failed to clear data", error)
                 flashToast("Could not clear data. Close Akari and try again.")
             }
         }
@@ -420,4 +422,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private data class SeedDay(
         val sleep: SleepQuality, val start: Int, val pem: Boolean, val activities: List<String>,
     )
+
+    private companion object {
+        const val TAG = "Akari"
+    }
 }

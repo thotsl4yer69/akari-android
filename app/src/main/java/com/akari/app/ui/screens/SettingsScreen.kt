@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -172,7 +173,13 @@ fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
             containerColor = AkariColors.Card,
             titleContentColor = AkariColors.Sumi,
             textContentColor = AkariColors.Sumi2,
-            title = { Text("Clear all data?", style = AkariText.OnboardH2) },
+            title = {
+                Text(
+                    "Clear all data?",
+                    style = AkariText.OnboardH2,
+                    modifier = Modifier.semantics { heading() },
+                )
+            },
             text = {
                 Text(
                     "This erases your diary, profile, and settings from this phone. You will return to the welcome screen.",
