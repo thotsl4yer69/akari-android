@@ -288,7 +288,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             } catch (error: CancellationException) {
                 throw error
             } catch (_: Exception) {
-                flashToast("Something went wrong. Close Akari and try again.")
+                flashToast("Could not clear data. Close Akari and try again.")
             }
         }
     }
