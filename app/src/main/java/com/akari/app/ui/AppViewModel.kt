@@ -16,6 +16,7 @@ import com.akari.app.domain.EntryKind
 import com.akari.app.domain.SleepQuality
 import com.akari.app.domain.Zone
 import com.akari.app.health.HealthConnectRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -275,14 +276,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun togglePoetic() = viewModelScope.launch { prefsRepo.setPoetic(!uiState.value.poetic) }
     fun clearAllData() {
         viewModelScope.launch {
-            repo.wipeAll()
-            prefsRepo.clear()
-            t.update {
-                Transient(
-                    screen = Screen.Onboarding,
-                    today = it.today,
-                    toast = "All data has been cleared",
-                )
+            try {
+                repo.wipeAll()
+                prefsRepo.clear()
+                t.update {
+                    Transient(
+                        screen = Screen.Onboarding,
+                        today = it.today,
+                    )
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                flashToast("Data could not be cleared. Try again.")
             }
         }
     }

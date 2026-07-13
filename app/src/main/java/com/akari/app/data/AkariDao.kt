@@ -47,6 +47,7 @@ interface AkariDao {
     @Query("DELETE FROM days")
     suspend fun clearDays()
 
+    /** Atomically removes every diary entry and day summary. */
     @Transaction
     suspend fun clearAll() {
         clearEntries()
