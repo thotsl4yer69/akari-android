@@ -32,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -224,7 +226,8 @@ private fun Divider(top: Dp = 0.dp) {
 @Composable
 private fun DataRow(iconPath: String, label: String, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clickableRole(onClick = onClick).padding(vertical = 14.dp),
+        Modifier.fillMaxWidth().semantics { contentDescription = label }
+            .clickableRole(onClick = onClick).padding(vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         PathGlyph(iconPath, 19.dp, AkariColors.Sumi2)
