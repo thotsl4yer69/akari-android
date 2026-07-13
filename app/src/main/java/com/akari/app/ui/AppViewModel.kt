@@ -281,7 +281,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 Transient(
                     screen = Screen.Onboarding,
                     today = it.today,
-                    toast = "Your diary was cleared",
+                    toast = "Your diary has been cleared",
                 )
             }
         }
