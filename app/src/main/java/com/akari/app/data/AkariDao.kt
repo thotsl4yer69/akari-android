@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
@@ -45,4 +46,11 @@ interface AkariDao {
 
     @Query("DELETE FROM days")
     suspend fun clearDays()
+
+    /** Atomically removes every diary entry and day summary. */
+    @Transaction
+    suspend fun clearAll() {
+        clearEntries()
+        clearDays()
+    }
 }

@@ -18,12 +18,23 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -42,6 +53,7 @@ import com.akari.app.ui.theme.AkariText
 
 @Composable
 fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
+    var showClearConfirmation by rememberSaveable { mutableStateOf(false) }
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             .padding(horizontal = 22.dp).padding(top = 16.dp, bottom = 24.dp),
@@ -141,6 +153,10 @@ fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
                 DataRow("M4 7h16v13H4zM4 7l3-3h10l3 3M9 12h6", "Back up everything (JSON)") { vm.backup() }
                 Divider()
                 DataRow("M4 12a8 8 0 1 0 2.3-5.6M4 4v3h3", "Restore from a backup") { vm.restore() }
+                Divider()
+                DataRow("M4 6h16v13H4zM4 6l3-3h10l3 3M12 10v6M9 13h6", "Clear all data") {
+                    showClearConfirmation = true
+                }
             }
         }
 
@@ -148,6 +164,50 @@ fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
             "Akari · a personal diary, not medical advice.\nNo account. No cloud. No internet.",
             style = AkariText.Caption, color = AkariColors.Sumi3,
             textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        )
+    }
+
+    if (showClearConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirmation = false },
+            containerColor = AkariColors.Card,
+            titleContentColor = AkariColors.Sumi,
+            textContentColor = AkariColors.Sumi2,
+            title = {
+                Text(
+                    "Clear all data?",
+                    style = AkariText.OnboardH2,
+                    modifier = Modifier.semantics { heading() },
+                )
+            },
+            text = {
+                Text(
+                    "This erases your diary, profile, and settings from this phone. You will return to the welcome screen.",
+                    style = AkariText.Body,
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearConfirmation = false }) {
+                    Text("Keep my data", color = AkariColors.Sumi2)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showClearConfirmation = false
+                        vm.clearAllData()
+                    },
+                    modifier = Modifier.semantics {
+                        contentDescription = "Clear all data, destructive action"
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AkariColors.Clay,
+                        contentColor = AkariColors.Washi,
+                    ),
+                ) {
+                    Text("Clear all data")
+                }
+            },
         )
     }
 }
@@ -176,7 +236,8 @@ private fun Divider(top: Dp = 0.dp) {
 @Composable
 private fun DataRow(iconPath: String, label: String, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clickableRole(onClick = onClick).padding(vertical = 14.dp),
+        Modifier.fillMaxWidth().semantics { contentDescription = label }
+            .clickableRole(onClick = onClick).padding(vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         PathGlyph(iconPath, 19.dp, AkariColors.Sumi2)

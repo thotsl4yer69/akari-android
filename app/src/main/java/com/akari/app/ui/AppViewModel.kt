@@ -1,6 +1,7 @@
 package com.akari.app.ui
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.AndroidViewModel
@@ -16,6 +17,7 @@ import com.akari.app.domain.EntryKind
 import com.akari.app.domain.SleepQuality
 import com.akari.app.domain.Zone
 import com.akari.app.health.HealthConnectRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -273,6 +275,25 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // ------------------------------------------------------------- settings ---
     fun setHue(color: Color) = viewModelScope.launch { prefsRepo.setHue(color.toArgb()) }
     fun togglePoetic() = viewModelScope.launch { prefsRepo.setPoetic(!uiState.value.poetic) }
+    fun clearAllData() {
+        viewModelScope.launch {
+            try {
+                repo.wipeAll()
+                prefsRepo.clear()
+                t.update {
+                    Transient(
+                        screen = Screen.Onboarding,
+                        today = it.today,
+                    )
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Log.e(TAG, "Failed to clear data", error)
+                flashToast("Could not clear data. Close Akari and try again.")
+            }
+        }
+    }
     fun exportCsv() = flashToast("Exported diary.csv · share with your doctor")
     fun backup() = flashToast("Backed up akari-backup.json to this phone")
     fun restore() = flashToast("Choose a backup file to restore")
@@ -401,4 +422,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private data class SeedDay(
         val sleep: SleepQuality, val start: Int, val pem: Boolean, val activities: List<String>,
     )
+
+    private companion object {
+        const val TAG = "Akari"
+    }
 }

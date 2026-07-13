@@ -37,10 +37,10 @@ android {
 
     buildTypes {
         debug {
-            // The demo build: seeded data for design review, own appId so it
-            // can live next to the real app.
+            // Keep debug installs empty too: they are commonly shared for
+            // testing and must never look like they contain a person's diary.
             applicationIdSuffix = ".debug"
-            buildConfigField("boolean", "SEED_DEMO", "true")
+            buildConfigField("boolean", "SEED_DEMO", "false")
         }
         release {
             isMinifyEnabled = false

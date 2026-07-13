@@ -18,9 +18,9 @@ import java.io.File
 import java.io.FileOutputStream
 
 /**
- * End-to-end smoke walk on an emulator (CI). The debug build seeds demo data,
- * so the app lands on Home. Walks every tab, logs an activity (lantern must
- * dim), and enters/exits crash mode. Saves screenshots to filesDir/screenshots
+ * End-to-end smoke walk on an emulator (CI). A fresh install starts empty, so
+ * the test completes onboarding before walking every tab, logging an activity
+ * (lantern must dim), and entering/exiting crash mode. Saves screenshots to filesDir/screenshots
  * — the CI workflow pulls them out as an artifact.
  *
  * Run with animations disabled (CI does this); the app's reduce-motion path
@@ -52,7 +52,11 @@ class SmokeTest {
 
     @Test
     fun walkTheWholeApp() {
-        // Debug seed → Home. (Eyebrow text is uppercased in the UI.)
+        // Fresh install → onboarding → morning intention → Home.
+        waitForText("Skip introduction")
+        rule.onNodeWithText("Skip introduction").performClick()
+        waitForText("Light the lantern")
+        rule.onNodeWithText("Light the lantern").performClick()
         waitForText("SPENT TODAY")
         shot("01-home")
 
@@ -73,15 +77,14 @@ class SmokeTest {
         waitForText("SPENT TODAY")
 
         // ---- log an activity; the lantern must dim ----
-        // Seed: start 78, spent 14 → 64. "Cook a meal" costs 8 → 56.
-        // ("Cook a meal" is not in the seeded timeline, so the node is unique.)
+        // 60 (fresh day start) − 8 (Cook a meal cost) = 52.
         rule.onNodeWithContentDescription("Log something").performClick()
         waitForText("Activity")
         rule.onNodeWithText("Activity").performClick()
         waitForText("Cook a meal")
         shot("05-log-activity")
         rule.onNodeWithText("Cook a meal").performClick()
-        waitForText("56")
+        waitForText("52")
         shot("06-home-after-log")
 
         // ---- crash mode: silent confirmation, then back to light ----
