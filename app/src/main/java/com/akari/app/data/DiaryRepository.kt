@@ -54,6 +54,7 @@ class DiaryRepository(private val dao: AkariDao) {
     fun allEntries(): Flow<List<DiaryEntry>> = dao.allEntries().map { rows -> rows.map { it.toDomain() } }
 
     // ---- data management ----
+    /** Atomically removes every diary entry and day summary. */
     suspend fun wipeAll() = dao.clearAll()
 }
 

@@ -61,6 +61,7 @@ class PrefsRepository(private val context: Context) {
     suspend fun setPoetic(v: Boolean) = edit { it[K.poetic] = v }
     suspend fun setOnboardingDone(v: Boolean) = edit { it[K.onboarding] = v }
     suspend fun setHcConnected(v: Boolean) = edit { it[K.hcConnected] = v }
+    /** Removes all saved settings, including onboarding and Health Connect state. */
     suspend fun clear() = edit { it.clear() }
     suspend fun setHcPerm(key: String, v: Boolean) = edit {
         when (key) {
