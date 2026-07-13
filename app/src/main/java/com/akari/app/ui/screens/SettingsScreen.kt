@@ -190,6 +190,9 @@ fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
                         showClearConfirmation = false
                         vm.clearAllData()
                     },
+                    modifier = Modifier.semantics {
+                        contentDescription = "Clear all data, destructive action"
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = AkariColors.Clay,
                         contentColor = AkariColors.Washi,
