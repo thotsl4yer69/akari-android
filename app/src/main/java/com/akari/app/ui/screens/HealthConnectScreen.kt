@@ -70,11 +70,10 @@ fun HealthConnectScreen(vm: AppViewModel, state: UiState) {
             Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(AkariColors.Card)
                 .border(1.dp, AkariColors.Line, RoundedCornerShape(16.dp)).padding(horizontal = 16.dp),
         ) {
+            // Akari only reads heart rate (data minimization — see
+            // HealthConnectRepository + the manifest). Show only what we read.
             val perms = listOf(
                 Triple("hr", "Heart rate", "beat-to-beat during the day"),
-                Triple("resting", "Resting heart rate", "sets your pacing ceiling"),
-                Triple("sleep", "Sleep", "duration & quality"),
-                Triple("steps", "Steps", "daily movement"),
             )
             perms.forEachIndexed { i, (key, label, sub) ->
                 val on = state.hcPerms[key] == true

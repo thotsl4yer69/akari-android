@@ -1,5 +1,7 @@
 package com.akari.app.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +27,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +56,22 @@ import com.akari.app.ui.theme.AkariText
 @Composable
 fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
     var showClearConfirmation by rememberSaveable { mutableStateOf(false) }
+
+    // Storage Access Framework — the user picks where the file goes / comes
+    // from. No storage permissions, no FileProvider, nothing leaves the device.
+    val csvLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/csv"),
+    ) { uri -> uri?.let { vm.exportCsvTo(it) } }
+    val backupLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri -> uri?.let { vm.backupTo(it) } }
+    // Accept any type: some file managers tag .json as octet-stream, and a
+    // backup the user can't select is worse than showing all files (restore
+    // validates the contents and fails gently on anything that isn't ours).
+    val restoreLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri -> uri?.let { vm.restoreFrom(it) } }
+
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             .padding(horizontal = 22.dp).padding(top = 16.dp, bottom = 24.dp),
@@ -148,11 +166,11 @@ fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
         // ---- Data ----
         Section("Data — stays on this phone") {
             CardBox {
-                DataRow("M12 3v12M8 11l4 4 4-4M5 21h14", "Export for doctor (CSV)") { vm.exportCsv() }
+                DataRow("M12 3v12M8 11l4 4 4-4M5 21h14", "Export for doctor (CSV)") { csvLauncher.launch("akari-diary.csv") }
                 Divider()
-                DataRow("M4 7h16v13H4zM4 7l3-3h10l3 3M9 12h6", "Back up everything (JSON)") { vm.backup() }
+                DataRow("M4 7h16v13H4zM4 7l3-3h10l3 3M9 12h6", "Back up everything (JSON)") { backupLauncher.launch("akari-backup.json") }
                 Divider()
-                DataRow("M4 12a8 8 0 1 0 2.3-5.6M4 4v3h3", "Restore from a backup") { vm.restore() }
+                DataRow("M4 12a8 8 0 1 0 2.3-5.6M4 4v3h3", "Restore from a backup") { restoreLauncher.launch(arrayOf("*/*")) }
                 Divider()
                 DataRow("M4 6h16v13H4zM4 6l3-3h10l3 3M12 10v6M9 13h6", "Clear all data") {
                     showClearConfirmation = true

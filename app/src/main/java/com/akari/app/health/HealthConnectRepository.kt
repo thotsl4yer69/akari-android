@@ -4,9 +4,6 @@ import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.RestingHeartRateRecord
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import java.time.Instant
@@ -19,12 +16,14 @@ import java.time.temporal.ChronoUnit
  */
 class HealthConnectRepository(private val context: Context) {
 
-    /** All read permissions Akari can ever ask for — nothing else. */
+    /**
+     * The only Health Connect permission Akari requests. Data minimization:
+     * we read live heart rate to drive the pacing ceiling and nothing else, so
+     * we ask for nothing else (Google Play Health apps policy requires every
+     * requested type to back a real feature).
+     */
     val permissions: Set<String> = setOf(
         HealthPermission.getReadPermission(HeartRateRecord::class),
-        HealthPermission.getReadPermission(RestingHeartRateRecord::class),
-        HealthPermission.getReadPermission(SleepSessionRecord::class),
-        HealthPermission.getReadPermission(StepsRecord::class),
     )
 
     fun availability(): Availability = when (HealthConnectClient.getSdkStatus(context)) {
@@ -62,22 +61,6 @@ class HealthConnectRepository(private val context: Context) {
                 .maxByOrNull { it.time }
                 ?.beatsPerMinute
                 ?.toInt()
-        }.getOrNull()
-    }
-
-    /** Latest resting heart rate reading, or null. */
-    suspend fun latestRestingHeartRate(): Int? {
-        val client = clientOrNull() ?: return null
-        return runCatching {
-            val end = Instant.now()
-            val start = end.minus(2, ChronoUnit.DAYS)
-            val response = client.readRecords(
-                ReadRecordsRequest(
-                    recordType = RestingHeartRateRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(start, end),
-                ),
-            )
-            response.records.maxByOrNull { it.time }?.beatsPerMinute?.toInt()
         }.getOrNull()
     }
 

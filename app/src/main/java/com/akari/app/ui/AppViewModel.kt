@@ -1,6 +1,7 @@
 package com.akari.app.ui
 
 import android.app.Application
+import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -8,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.akari.app.BuildConfig
 import com.akari.app.data.AkariDb
+import com.akari.app.data.DataExport
 import com.akari.app.data.DiaryDate
 import com.akari.app.data.DiaryRepository
 import com.akari.app.data.Prefs
@@ -18,6 +20,7 @@ import com.akari.app.domain.SleepQuality
 import com.akari.app.domain.Zone
 import com.akari.app.health.HealthConnectRepository
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,6 +32,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** UI-only state that is not persisted to Room/DataStore. */
 private data class Transient(
@@ -294,9 +298,57 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             }
         }
     }
-    fun exportCsv() = flashToast("Exported diary.csv · share with your doctor")
-    fun backup() = flashToast("Backed up akari-backup.json to this phone")
-    fun restore() = flashToast("Choose a backup file to restore")
+    /** Write the doctor-facing CSV to a user-chosen file (Storage Access Framework). */
+    fun exportCsvTo(uri: Uri) = viewModelScope.launch {
+        try {
+            val text = DataExport.toCsv(repo.allDaysOnce(), repo.allEntriesOnce())
+            writeText(uri, text)
+            flashToast("Diary exported · share the file with your doctor")
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            Log.e(TAG, "CSV export failed", error)
+            flashToast("Could not export. Please try again.")
+        }
+    }
+
+    /** Write a full JSON backup to a user-chosen file. */
+    fun backupTo(uri: Uri) = viewModelScope.launch {
+        try {
+            val text = DataExport.toJson(repo.allDaysOnce(), repo.allEntriesOnce())
+            writeText(uri, text)
+            flashToast("Backed up to your chosen file")
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            Log.e(TAG, "Backup failed", error)
+            flashToast("Could not back up. Please try again.")
+        }
+    }
+
+    /** Restore the diary from a user-chosen JSON backup, replacing current data. */
+    fun restoreFrom(uri: Uri) = viewModelScope.launch {
+        try {
+            val text = withContext(Dispatchers.IO) {
+                getApplication<Application>().contentResolver
+                    .openInputStream(uri)?.use { it.readBytes().decodeToString() }
+            } ?: run { flashToast("Could not open that file."); return@launch }
+            val backup = DataExport.fromJson(text)
+            repo.replaceAll(backup.days, backup.entries)
+            flashToast("Restored ${backup.days.size} days from your backup")
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            Log.e(TAG, "Restore failed", error)
+            flashToast("Could not read that backup file.")
+        }
+    }
+
+    private suspend fun writeText(uri: Uri, text: String) = withContext(Dispatchers.IO) {
+        getApplication<Application>().contentResolver.openOutputStream(uri)?.use {
+            it.write(text.toByteArray())
+        }
+    }
 
     // -------------------------------------------------------- health connect ---
     fun setHcConnected(connected: Boolean) {

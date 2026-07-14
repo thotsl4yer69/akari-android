@@ -40,6 +40,20 @@ interface AkariDao {
     @Query("SELECT * FROM entries ORDER BY epochMillis ASC, id ASC")
     fun allEntries(): Flow<List<EntryEntity>>
 
+    // ---- export / backup snapshots (one-shot reads) ----
+    @Query("SELECT * FROM days ORDER BY epochDay ASC")
+    suspend fun allDaysList(): List<DayEntity>
+
+    @Query("SELECT * FROM entries ORDER BY epochMillis ASC, id ASC")
+    suspend fun allEntriesList(): List<EntryEntity>
+
+    // ---- restore (bulk insert, preserving ids) ----
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDays(days: List<DayEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEntries(entries: List<EntryEntity>)
+
     // ---- data management ----
     @Query("DELETE FROM entries")
     suspend fun clearEntries()
@@ -52,5 +66,13 @@ interface AkariDao {
     suspend fun clearAll() {
         clearEntries()
         clearDays()
+    }
+
+    /** Atomically replaces the whole diary with a restored backup. */
+    @Transaction
+    suspend fun replaceAll(days: List<DayEntity>, entries: List<EntryEntity>) {
+        clearAll()
+        insertDays(days)
+        insertEntries(entries)
     }
 }

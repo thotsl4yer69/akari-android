@@ -56,6 +56,14 @@ class DiaryRepository(private val dao: AkariDao) {
     // ---- data management ----
     /** Atomically removes every diary entry and day summary. */
     suspend fun wipeAll() = dao.clearAll()
+
+    // ---- export / backup / restore ----
+    suspend fun allDaysOnce(): List<DayEntity> = dao.allDaysList()
+    suspend fun allEntriesOnce(): List<EntryEntity> = dao.allEntriesList()
+
+    /** Replaces the entire diary with a restored backup, atomically. */
+    suspend fun replaceAll(days: List<DayEntity>, entries: List<EntryEntity>) =
+        dao.replaceAll(days, entries)
 }
 
 private fun EntryEntity.toDomain() = DiaryEntry(

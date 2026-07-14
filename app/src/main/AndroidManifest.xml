@@ -4,11 +4,12 @@
     <!-- Privacy is a feature: Akari requests NO INTERNET permission. All data
          stays on the device. Do not add android.permission.INTERNET. -->
 
-    <!-- Health Connect: read-only. Optional; the app degrades to manual entry. -->
+    <!-- Health Connect: read-only, optional; the app degrades to manual entry.
+         Data minimization (Google Play Health apps policy): Akari only reads the
+         live heart rate that drives the pacing-ceiling feature, so it requests
+         only READ_HEART_RATE. Do not add Sleep/Steps/RestingHR permissions
+         unless a user-facing feature actually reads them. -->
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
-    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE" />
-    <uses-permission android:name="android.permission.health.READ_SLEEP" />
-    <uses-permission android:name="android.permission.health.READ_STEPS" />
 
     <!-- Discover the Health Connect app so we can route the user to it. -->
     <queries>

@@ -1,5 +1,6 @@
 package com.akari.app.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -56,6 +57,22 @@ fun AkariApp(vm: AppViewModel, state: UiState) {
     val motion = rememberMotionEnabled()
     val showTabs = state.sheet == Sheet.None &&
         state.screen in setOf(Screen.Home, Screen.Trends, Screen.History, Screen.Settings)
+
+    // System Back / gesture: close a sheet (or step a sub-sheet back to the
+    // chooser), exit crash mode, or move up the nav tree (Health Connect →
+    // Settings, a tab → Home). When there's nowhere to go back to (Home,
+    // onboarding, morning) it stays disabled so the OS default runs (exit).
+    val canGoBack = state.sheet != Sheet.None ||
+        state.screen in setOf(Screen.Trends, Screen.History, Screen.Settings, Screen.HealthConnect, Screen.Crash)
+    BackHandler(enabled = canGoBack) {
+        when {
+            state.sheet != Sheet.None && state.sheet != Sheet.Log -> vm.backToLog()
+            state.sheet != Sheet.None -> vm.closeSheet()
+            state.screen == Screen.Crash -> vm.exitCrash()
+            state.screen == Screen.HealthConnect -> vm.go(Screen.Settings)
+            else -> vm.go(Screen.Home)
+        }
+    }
 
     CompositionLocalProvider(LocalMotionEnabled provides motion) {
     Box(Modifier.fillMaxSize().background(AkariColors.Washi)) {
