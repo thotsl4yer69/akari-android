@@ -41,7 +41,7 @@ fun TrendsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
     // oldest → newest, last bar is today
     val past = state.history.reversed().takeLast(13).map { Bar(it.remaining, it.pem) }
     val bars = past + Bar(state.energy, state.pem)
-    val ready = state.history.size >= 2
+    val ready = state.history.size >= 3
 
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState())

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -74,13 +75,18 @@ fun HomeScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
                 Text(homeGreeting(state.name), style = AkariText.HomeGreeting, color = AkariColors.Sumi)
             }
             Box(
-                Modifier.size(40.dp).clip(CircleShape).background(AkariColors.Card)
-                    .border(1.dp, AkariColors.Line2, CircleShape)
+                Modifier.size(48.dp)
                     .clickableRole(onClick = { vm.enterCrash() })
                     .semantics { contentDescription = "Enter crash mode" },
                 contentAlignment = Alignment.Center,
             ) {
-                PathGlyph("M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8Z", 18.dp, AkariColors.Sumi2, filled = true)
+                Box(
+                    Modifier.size(40.dp).clip(CircleShape).background(AkariColors.Card)
+                        .border(1.dp, AkariColors.Line2, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    PathGlyph("M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8Z", 18.dp, AkariColors.Sumi2, filled = true)
+                }
             }
         }
         Spacer(Modifier.height(6.dp))
@@ -120,16 +126,21 @@ fun HomeScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
         // Today section
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Eyebrow("Today")
-            Row(
-                Modifier.clip(RoundedCornerShape(20.dp))
-                    .border(1.dp, AkariColors.Line2, RoundedCornerShape(20.dp))
-                    .clickableRole(onClick = { vm.flagPem() })
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
+            Box(
+                Modifier.defaultMinSize(minHeight = 48.dp)
+                    .clickableRole(onClick = { vm.flagPem() }),
+                contentAlignment = Alignment.Center,
             ) {
-                val c = if (state.pem) AkariColors.Clay else AkariColors.Sumi2
-                Text("⚑", fontSize = 12.sp, color = c)
-                Text(if (state.pem) "PEM flagged" else "Flag PEM", style = AkariText.LabelMedium, color = c)
+                Row(
+                    Modifier.clip(RoundedCornerShape(20.dp))
+                        .border(1.dp, AkariColors.Line2, RoundedCornerShape(20.dp))
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val c = if (state.pem) AkariColors.Clay else AkariColors.Sumi2
+                    Text("⚑", fontSize = 12.sp, color = c)
+                    Text(if (state.pem) "PEM flagged" else "Flag PEM", style = AkariText.LabelMedium, color = c)
+                }
             }
         }
         Spacer(Modifier.height(10.dp))

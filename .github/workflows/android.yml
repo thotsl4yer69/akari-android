@@ -35,7 +35,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug testDebugUnitTest --no-daemon
 
-      - name: Build signed release APK
+      - name: Build signed release APK + Play bundle (.aab)
         if: steps.gradle_check.outputs.exists == 'true'
         env:
           AKARI_KEYSTORE_B64: ${{ secrets.AKARI_KEYSTORE_BASE64 }}
@@ -43,7 +43,7 @@ jobs:
         run: |
           if [ -z "$AKARI_KEYSTORE_B64" ]; then echo "No signing secret — skipping release build."; exit 0; fi
           echo "$AKARI_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/akari.jks"
-          AKARI_KEYSTORE="$RUNNER_TEMP/akari.jks" ./gradlew assembleRelease --no-daemon
+          AKARI_KEYSTORE="$RUNNER_TEMP/akari.jks" ./gradlew assembleRelease bundleRelease --no-daemon
 
       - name: Upload debug APK artifact
         if: steps.gradle_check.outputs.exists == 'true'
@@ -59,6 +59,14 @@ jobs:
         with:
           name: akari-release-apk
           path: app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: warn
+
+      - name: Upload Play bundle artifact
+        if: steps.gradle_check.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: akari-release-aab
+          path: app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: warn
 
   # Boots the app on an emulator, walks every screen (SmokeTest), and uploads
@@ -138,6 +146,13 @@ jobs:
           name: akari-release-apk
           path: release
 
+      - name: Download Play bundle artifact
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: akari-release-aab
+          path: bundle
+
       - name: Publish rolling release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -145,6 +160,8 @@ jobs:
           TAG=latest
           mv release/app-release.apk akari.apk
           mv debug/app-debug.apk akari-demo.apk
+          ASSETS="akari.apk akari-demo.apk"
+          if [ -f bundle/app-release.aab ]; then mv bundle/app-release.aab akari.aab; ASSETS="$ASSETS akari.aab"; fi
           NOTES="Built from \`${GITHUB_SHA}\`.
 
           ## Install \`akari.apk\` — this is the app
@@ -152,6 +169,6 @@ jobs:
 
           \`akari-demo.apk\` is the design-review build (separate app, \"Akari (demo)\") pre-seeded with example days — for looking at screens, not for real use. They can be installed side by side."
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --prerelease --title "Akari (latest main)" --notes "$NOTES"
-          gh release upload "$TAG" akari.apk akari-demo.apk --clobber
+          gh release upload "$TAG" $ASSETS --clobber
           gh release delete-asset "$TAG" app-debug.apk --yes || true
           gh release edit "$TAG" --title "Akari (latest main)" --notes "$NOTES"

@@ -11,6 +11,7 @@ import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -18,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
@@ -79,18 +81,24 @@ fun AkariSwitch(checked: Boolean, onToggle: () -> Unit, motion: Boolean = LocalM
     val knobX by animateFloatAsState(if (checked) 23f else 3f, tween(if (motion) 180 else 0), label = "knob")
     Box(
         modifier
-            .size(width = 48.dp, height = 28.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .background(if (checked) AkariColors.Sage else AkariColors.Line2)
-            .clickableRole(role = Role.Switch) { onToggle() },
+            .size(width = 48.dp, height = 48.dp)
+            .toggleable(value = checked, role = Role.Switch, onValueChange = { onToggle() }),
+        contentAlignment = Alignment.Center,
     ) {
         Box(
             Modifier
-                .offset(x = knobX.dp, y = 3.dp)
-                .size(22.dp)
-                .clip(CircleShape)
-                .background(Color.White),
-        )
+                .size(width = 48.dp, height = 28.dp)
+                .clip(RoundedCornerShape(15.dp))
+                .background(if (checked) AkariColors.Sage else AkariColors.Line2),
+        ) {
+            Box(
+                Modifier
+                    .offset(x = knobX.dp, y = 3.dp)
+                    .size(22.dp)
+                    .clip(CircleShape)
+                    .background(Color.White),
+            )
+        }
     }
 }
 

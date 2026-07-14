@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -56,6 +57,7 @@ import com.akari.app.ui.theme.AkariText
 @Composable
 fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
     var showClearConfirmation by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
 
     // Storage Access Framework — the user picks where the file goes / comes
     // from. No storage permissions, no FileProvider, nothing leaves the device.
@@ -174,6 +176,22 @@ fun SettingsScreen(vm: AppViewModel, state: UiState, motion: Boolean) {
                 Divider()
                 DataRow("M4 6h16v13H4zM4 6l3-3h10l3 3M12 10v6M9 13h6", "Clear all data") {
                     showClearConfirmation = true
+                }
+            }
+        }
+
+        // ---- About ----
+        Section("About") {
+            CardBox {
+                DataRow("M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 11v5M12 7.5v.7", "Privacy policy") {
+                    runCatching {
+                        context.startActivity(
+                            android.content.Intent(
+                                android.content.Intent.ACTION_VIEW,
+                                android.net.Uri.parse("https://github.com/thotsl4yer69/akari-android/blob/main/PRIVACY.md"),
+                            ),
+                        )
+                    }
                 }
             }
         }

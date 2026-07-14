@@ -32,6 +32,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -132,7 +137,15 @@ private fun BatterySlider(battery: Int, thumbColor: Color, onChange: (Int) -> Un
     val thumb = 24.dp
 
     Box(
-        Modifier.fillMaxWidth().height(26.dp)
+        Modifier.fillMaxWidth().height(48.dp)
+            .semantics(mergeDescendants = true) {
+                contentDescription = "Fine-tune the battery"
+                progressBarRangeInfo = ProgressBarRangeInfo(battery.toFloat(), 0f..100f)
+                setProgress { target ->
+                    onChange(target.toInt().coerceIn(0, 100))
+                    true
+                }
+            }
             .pointerInput(Unit) {
                 trackWidthPx = size.width.toFloat()
                 detectTapGestures { offset -> onChange(((offset.x / size.width) * 100f).toInt()) }
