@@ -8,6 +8,11 @@ build/
 local.properties
 captures/
 
+# Local environment/config
+.env
+.env.local
+.env.*.local
+
 # IDE
 .idea/
 *.iml
@@ -17,12 +22,18 @@ captures/
 .DS_Store
 Thumbs.db
 
-# Signing — never commit keys
+# Signing / private keys — never commit
 *.jks
 *.keystore
+*.p12
+*.pfx
+*.pem
+*.key
 
-# Logs
+# Logs / backups
 *.log
+*.bak
+*.zip
 
 # CI-downloaded artifacts
 _apk/
