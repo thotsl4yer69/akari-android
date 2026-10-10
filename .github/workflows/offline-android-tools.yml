@@ -1,0 +1,37 @@
+name: Offline Android compiler tools
+on:
+  push:
+    branches: [build/offline-android-tools-20261011]
+permissions:
+  contents: read
+jobs:
+  tools:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Package open-source compiler tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p bundle/build-tools bundle/platform bundle/runtime
+          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          BUILD="$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
+          PLATFORM="$(find "$SDK/platforms" -mindepth 1 -maxdepth 1 -type d -name 'android-[0-9]*' | sort -V | tail -1)"
+          test -x "$BUILD/aapt2"
+          cp "$BUILD/aapt2" "$BUILD/zipalign" "$BUILD/apksigner" "$BUILD/d8" bundle/build-tools/
+          cp -r "$BUILD/lib" bundle/build-tools/
+          if [ -d "$BUILD/lib64" ]; then cp -r "$BUILD/lib64" bundle/build-tools/; fi
+          cp "$PLATFORM/android.jar" "$PLATFORM/source.properties" bundle/platform/
+          cp "$BUILD/source.properties" bundle/build-tools/
+          find "$BUILD" -maxdepth 1 -name '*NOTICE*' -exec cp '{}' bundle/build-tools/ \;
+          find "$PLATFORM" -maxdepth 1 -name '*NOTICE*' -exec cp '{}' bundle/platform/ \;
+          npm pack pyodide@0.28.3 --pack-destination bundle/runtime
+          (cd bundle/runtime && tar -xzf pyodide-0.28.3.tgz && rm pyodide-0.28.3.tgz)
+          tar -czf android-build-tools.tar.gz bundle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-build-tools
+          path: android-build-tools.tar.gz
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
