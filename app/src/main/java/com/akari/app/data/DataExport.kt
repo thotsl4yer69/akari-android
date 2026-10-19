@@ -36,12 +36,15 @@ object DataExport {
         return sb.toString()
     }
 
-    private fun csvCell(raw: String): String =
-        if (raw.any { it == ',' || it == '"' || it == '\n' || it == '\r' }) {
-            "\"" + raw.replace("\"", "\"\"") + "\""
-        } else {
-            raw
-        }
+    // Escaping quotation marks alone does not prevent spreadsheet formulas.
+    // Treat leading formula characters (including after whitespace) as text.
+    private fun csvCell(raw: String): String {
+        val first = raw.trimStart().firstOrNull()
+        val safe = if (first == '=' || first == '+' || first == '-' || first == '@') "'$raw" else raw
+        return if (safe.any { it == ',' || it == '"' || it == '\n' || it == '\r' }) {
+            "\"" + safe.replace("\"", "\"\"") + "\""
+        } else safe
+    }
 
     // --------------------------------------------------------------- JSON ---
     fun toJson(days: List<DayEntity>, entries: List<EntryEntity>): String {
@@ -83,7 +86,9 @@ object DataExport {
     /** Parse a backup file. Throws on malformed input — callers catch. */
     fun fromJson(text: String): Backup {
         val root = JSONObject(text)
+        require(root.getInt("version") == VERSION) { "Unsupported Akari backup format. No data was imported." }
         val dayArr = root.getJSONArray("days")
+        require(dayArr.length() <= 100_000) { "Backup contains too many days." }
         val days = ArrayList<DayEntity>(dayArr.length())
         for (i in 0 until dayArr.length()) {
             val o = dayArr.getJSONObject(i)
@@ -98,6 +103,7 @@ object DataExport {
             )
         }
         val entryArr = root.getJSONArray("entries")
+        require(entryArr.length() <= 1_000_000) { "Backup contains too many entries." }
         val entries = ArrayList<EntryEntity>(entryArr.length())
         for (i in 0 until entryArr.length()) {
             val o = entryArr.getJSONObject(i)
